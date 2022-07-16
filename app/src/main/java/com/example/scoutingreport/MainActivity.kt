@@ -44,14 +44,11 @@ fun DropDownMenu(
     label: String,
     isEnabled: Boolean = true,
     tvValue: String = "",
-    onTvChange: ((String) -> Unit)? = null
+    onTvChange: (String) -> Unit
 ) {
     // Declaring a boolean value to store
     // the expanded state of the Text Field
     var mExpanded by remember { mutableStateOf(false) }
-
-    // Create a string value to store the selected TextField value
-    var mSelectedText by remember { mutableStateOf("") }
 
     // To store the width of the TextField
     var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
@@ -71,8 +68,8 @@ fun DropDownMenu(
             singleLine = true,
             enabled = isEnabled,
             readOnly = true,
-            value = mSelectedText,
-            onValueChange = { mSelectedText = it },
+            value = tvValue,
+            onValueChange = onTvChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->
@@ -98,7 +95,7 @@ fun DropDownMenu(
         ) {
             list.forEach { label ->
                 DropdownMenuItem(onClick = {
-                    mSelectedText = label
+                    onTvChange.invoke(label)
                     mExpanded = false
                 }) {
                     Text(text = label)
@@ -155,12 +152,22 @@ fun MainPreview() {
 
 @Composable
 fun ScaffoldContent() {
+    var fieldName by remember { mutableStateOf("") }
+    var pestType by remember { mutableStateOf("") }
+    var pestName by remember { mutableStateOf("") }
+    var severity by remember { mutableStateOf("") }
+    var enable by remember { mutableStateOf(false) }
+
+    // pest name and Severity dropdown menu will only be activated when
+    // user choosen option from field name and pest type
+    enable = fieldName.isNotEmpty() && pestType.isNotEmpty()
+
     Column {
         Spacer(modifier = Modifier.height(8.dp))
-        DropDownMenu(label = "Field Name")
-        DropDownMenu(label = "Pest Type")
-        DropDownMenu(label = "Pest Name", isEnabled = false)
-        DropDownMenu(label = "Severity", isEnabled = false)
+        DropDownMenu(label = "Field Name", tvValue = fieldName) { fieldName = it }
+        DropDownMenu(label = "Pest Type", tvValue = pestType) { pestType = it }
+        DropDownMenu(label = "Pest Name", tvValue = pestName, isEnabled = enable) { pestName = it }
+        DropDownMenu(label = "Severity", tvValue = severity, isEnabled = enable) { severity = it }
     }
 }
 
