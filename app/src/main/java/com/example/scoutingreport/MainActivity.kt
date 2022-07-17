@@ -1,6 +1,7 @@
 package com.example.scoutingreport
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -14,7 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +62,7 @@ fun DropDownMenu(
     else
         Icons.Filled.KeyboardArrowDown
 
-    Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+    Box {
 
         // Create an Outlined Text Field
         // with icon and not expanded
@@ -108,7 +111,15 @@ fun DropDownMenu(
 // TODO: Make navigate icon clickable
 @Composable
 fun NavigateIcon(icon: ImageVector, title: String) {
-    Column (modifier = Modifier.width(IntrinsicSize.Max)) {
+    val context = LocalContext.current
+
+    Column (
+        modifier = Modifier
+            .width(IntrinsicSize.Max)
+            .clickable {
+                Toast.makeText(context, "$title pressed", Toast.LENGTH_SHORT).show()
+            }
+    ) {
         Icon(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,7 +138,7 @@ fun MainPreview() {
                 title = { Text("Scouting Report") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { /*TODO: Give behaviour on prev click*/ }
+                        onClick = {/*TODO: Give behaviour on prev click*/ }
                     ) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                     }
@@ -159,15 +170,36 @@ fun ScaffoldContent() {
     var enable by remember { mutableStateOf(false) }
 
     // pest name and Severity dropdown menu will only be activated when
-    // user choosen option from field name and pest type
+    // user chosen option from field name and pest type
     enable = fieldName.isNotEmpty() && pestType.isNotEmpty()
 
-    Column {
-        Spacer(modifier = Modifier.height(8.dp))
+    Column (
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = CenterHorizontally
+    ) {
         DropDownMenu(label = "Field Name", tvValue = fieldName) { fieldName = it }
         DropDownMenu(label = "Pest Type", tvValue = pestType) { pestType = it }
         DropDownMenu(label = "Pest Name", tvValue = pestName, isEnabled = enable) { pestName = it }
         DropDownMenu(label = "Severity", tvValue = severity, isEnabled = enable) { severity = it }
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        // Add photo button
+        Button (
+            modifier = Modifier.height(40.dp),
+            onClick = { /*TODO*/ },
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_photo_camera),
+                contentDescription = null
+            )
+            Spacer(Modifier.width(5.dp))
+            Text(text = "ADD PHOTO")
+        }
+
+        Divider(modifier = Modifier.fillMaxWidth())
     }
 }
 
