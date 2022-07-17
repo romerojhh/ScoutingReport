@@ -1,11 +1,16 @@
 package com.example.scoutingreport
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,6 +23,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -117,7 +123,9 @@ fun NavigateIcon(icon: ImageVector, title: String) {
         modifier = Modifier
             .width(IntrinsicSize.Max)
             .clickable {
-                Toast.makeText(context, "$title pressed", Toast.LENGTH_SHORT).show()
+                Toast
+                    .makeText(context, "$title pressed", Toast.LENGTH_SHORT)
+                    .show()
             }
     ) {
         Icon(
@@ -162,7 +170,46 @@ fun MainPreview() {
 }
 
 @Composable
+fun PestImages() {
+
+}
+
+@Composable
+fun LazyRowDemo() {
+    val list = listOf(
+        "A", "B", "C", "D"
+    ) + ((0..100).map { it.toString() })
+    LazyRow(modifier = Modifier.fillMaxHeight()) {
+        items(items = list, itemContent = { item ->
+            Log.d("COMPOSE", "This get rendered $item")
+            when (item) {
+                "A" -> {
+                    Text(text = item, style = TextStyle(fontSize = 80.sp))
+                }
+                "B" -> {
+                    Button(onClick = {}) {
+                        Text(text = item, style = TextStyle(fontSize = 80.sp))
+                    }
+                }
+                "C" -> {
+                    //Do Nothing
+                }
+                "D" -> {
+                    Text(text = item)
+                }
+                else -> {
+                    Text(text = item, style = TextStyle(fontSize = 80.sp))
+                }
+            }
+        })
+    }
+}
+
+@Composable
 fun ScaffoldContent() {
+    // to enable vertical scrolling
+    val scrollState = rememberScrollState()
+
     var fieldName by remember { mutableStateOf("") }
     var pestType by remember { mutableStateOf("") }
     var pestName by remember { mutableStateOf("") }
@@ -176,7 +223,8 @@ fun ScaffoldContent() {
     Column (
         modifier = Modifier
             .padding(top = 16.dp)
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp)
+            .verticalScroll(state = scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = CenterHorizontally
     ) {
@@ -200,10 +248,14 @@ fun ScaffoldContent() {
         }
 
         Divider(modifier = Modifier.fillMaxWidth())
+        DropDownMenu(label = "Field Name", tvValue = fieldName) { fieldName = it }
+        DropDownMenu(label = "Pest Type", tvValue = pestType) { pestType = it }
+        DropDownMenu(label = "Pest Name", tvValue = pestName, isEnabled = enable) { pestName = it }
+        DropDownMenu(label = "Severity", tvValue = severity, isEnabled = enable) { severity = it }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 1500)
 @Composable
 fun DefaultPreview() {
     ScoutingReportTheme {
