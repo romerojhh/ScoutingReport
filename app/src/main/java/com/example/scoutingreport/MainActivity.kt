@@ -80,7 +80,7 @@ fun DropDownMenu(
         // Create an Outlined Text Field
         // with icon and not expanded
         OutlinedTextField(
-            placeholder = {Text("Please choose")},
+            placeholder = { Text("Please choose") },
             singleLine = true,
             enabled = isEnabled,
             readOnly = true,
@@ -93,7 +93,7 @@ fun DropDownMenu(
                     // the DropDown the same width
                     mTextFieldSize = coordinates.size.toSize()
                 },
-            label = {Text(label)},
+            label = { Text(label) },
             trailingIcon = {
                 Icon(icon,null,
                     Modifier.clickable { if (isEnabled) mExpanded = !mExpanded })
@@ -148,8 +148,14 @@ fun NavigateIcon(icon: ImageVector, title: String) {
 
 @Composable
 fun MainPreview() {
+    val modifier = Modifier.padding(horizontal = 30.dp)
+    var allEnabled by remember { mutableStateOf(false) }
+
     Scaffold(
-        topBar = { TopAppBar(
+
+        topBar =
+        {
+            TopAppBar(
                 title = { Text("Scouting Report") },
                 navigationIcon = {
                     IconButton(
@@ -159,20 +165,42 @@ fun MainPreview() {
                     }
                 },
                 backgroundColor = MaterialTheme.colors.primary
-        ) },
-        bottomBar = { BottomAppBar(
-            backgroundColor = MaterialTheme.colors.primary
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                NavigateIcon(icon = Icons.Default.LocationOn, title = "Scout")
-                NavigateIcon(icon = Icons.Default.List, title = "Reports")
-            }
-        }},
+            )
+        },
 
-        content = { ScaffoldContent() }
+        bottomBar =
+        {
+            BottomAppBar(
+                backgroundColor = MaterialTheme.colors.primary
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    NavigateIcon(icon = Icons.Default.LocationOn, title = "Scout")
+                    NavigateIcon(icon = Icons.Default.List, title = "Reports")
+                }
+            }
+        },
+
+        content = {
+            ScaffoldContent(allEnabled) { allEnabled = it }
+        },
+
+        floatingActionButtonPosition = FabPosition.Center,
+
+        floatingActionButton = {
+            if (allEnabled) {
+                Button(
+                    modifier = modifier
+                        .fillMaxWidth(),
+                    onClick = { /*TODO*/ },
+                    enabled = allEnabled
+                ) {
+                    Text(text = "Save Report")
+                }
+            }
+        }
     )
 }
 
@@ -193,13 +221,18 @@ fun PestImages() {
         modifier = Modifier.fillMaxWidth()
     ) {
         items(images, itemContent = { item ->
-            ImageItem(imageId = item, modifier = Modifier.width(160.dp).aspectRatio(3/4f))
+            ImageItem(imageId = item, modifier = Modifier
+                .width(160.dp)
+                .aspectRatio(3 / 4f))
         })
     }
 }
 
 @Composable
-fun ScaffoldContent() {
+fun ScaffoldContent(
+    allEnabled: Boolean,
+    onAllEnabled: (Boolean) -> Unit
+) {
     // to enable vertical scrolling
     val scrollState = rememberScrollState()
 
@@ -208,10 +241,17 @@ fun ScaffoldContent() {
     var pestName by remember { mutableStateOf("") }
     var severity by remember { mutableStateOf("") }
     var enable by remember { mutableStateOf(false) }
+    var noteContent by remember { mutableStateOf("") }
+    var recommendationContent by remember { mutableStateOf("") }
 
     // pest name and Severity dropdown menu will only be activated when
     // user chosen option from field name and pest type
     enable = fieldName.isNotEmpty() && pestType.isNotEmpty()
+
+    // User can save report when at least the first 4 dropdown menu is filled
+    if (enable && pestName.isNotEmpty() && severity.isNotEmpty() && !allEnabled) {
+        onAllEnabled.invoke(true)
+    }
 
     Column (
         modifier = Modifier
@@ -240,12 +280,33 @@ fun ScaffoldContent() {
             Text(text = "ADD PHOTO")
         }
 
-
         PestImages()
 
         Divider(modifier = Modifier.fillMaxWidth())
 
+        NoteSpace(label = "Notes", noteContent) { noteContent = it }
+        NoteSpace(label = "Recommendation", recommendationContent) { recommendationContent = it }
+        Spacer(modifier = Modifier.height(200.dp))
     }
+}
+
+@Composable
+fun NoteSpace(
+    // TODO: Do we need state hoisting here???
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text("Add your notes here...") },
+        maxLines = 6,
+        label = { Text(label) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    )
 }
 
 @Preview(showBackground = true, heightDp = 1500)
