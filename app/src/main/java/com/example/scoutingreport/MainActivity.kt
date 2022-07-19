@@ -1,7 +1,8 @@
+@file:OptIn(ExperimentalSnapperApi::class)
+
 package com.example.scoutingreport
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -23,12 +25,17 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
+import dev.chrisbanes.snapper.ExperimentalSnapperApi
+import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
+
+// TODO: Use extended icons so that we don't have to import camera icon using
+// implementation "androidx.compose.material:material-icons-extended:$compose_version"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -171,36 +178,22 @@ fun MainPreview() {
 
 @Composable
 fun PestImages() {
+    // Get images from the list that is storing the pest images from user
+    // display the images only if the list is not empty
+    val images = listOf<Int>(R.drawable.pest1, R.drawable.pest2, R.drawable.pest3)
+    val lazyListState = rememberLazyListState()
+    val contentPadding = PaddingValues(16.dp)
 
-}
-
-@Composable
-fun LazyRowDemo() {
-    val list = listOf(
-        "A", "B", "C", "D"
-    ) + ((0..100).map { it.toString() })
-    LazyRow(modifier = Modifier.fillMaxHeight()) {
-        items(items = list, itemContent = { item ->
-            Log.d("COMPOSE", "This get rendered $item")
-            when (item) {
-                "A" -> {
-                    Text(text = item, style = TextStyle(fontSize = 80.sp))
-                }
-                "B" -> {
-                    Button(onClick = {}) {
-                        Text(text = item, style = TextStyle(fontSize = 80.sp))
-                    }
-                }
-                "C" -> {
-                    //Do Nothing
-                }
-                "D" -> {
-                    Text(text = item)
-                }
-                else -> {
-                    Text(text = item, style = TextStyle(fontSize = 80.sp))
-                }
-            }
+    LazyRow(
+        state = lazyListState,
+        flingBehavior = rememberSnapperFlingBehavior(lazyListState = lazyListState, endContentPadding = contentPadding.calculateEndPadding(LayoutDirection.Ltr),
+        ),
+        contentPadding = contentPadding,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(images, itemContent = { item ->
+            ImageItem(imageId = item, modifier = Modifier.width(160.dp).aspectRatio(3/4f))
         })
     }
 }
@@ -247,11 +240,11 @@ fun ScaffoldContent() {
             Text(text = "ADD PHOTO")
         }
 
+
+        PestImages()
+
         Divider(modifier = Modifier.fillMaxWidth())
-        DropDownMenu(label = "Field Name", tvValue = fieldName) { fieldName = it }
-        DropDownMenu(label = "Pest Type", tvValue = pestType) { pestType = it }
-        DropDownMenu(label = "Pest Name", tvValue = pestName, isEnabled = enable) { pestName = it }
-        DropDownMenu(label = "Severity", tvValue = severity, isEnabled = enable) { severity = it }
+
     }
 }
 
