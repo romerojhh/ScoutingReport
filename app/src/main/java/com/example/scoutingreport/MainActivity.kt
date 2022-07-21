@@ -2,6 +2,7 @@
 
 package com.example.scoutingreport
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -26,10 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.unit.*
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
@@ -130,6 +128,11 @@ fun NavigateIcon(icon: ImageVector, title: String) {
         modifier = Modifier
             .width(IntrinsicSize.Max)
             .clickable {
+                if (title == "Reports") {
+                    context.startActivity(Intent(context, ReportScreen::class.java))
+                    //startActivity(context, Intent(context, ReportScreen::class.java))
+                }
+
                 Toast
                     .makeText(context, "$title pressed", Toast.LENGTH_SHORT)
                     .show()
@@ -183,8 +186,14 @@ fun MainPreview() {
             }
         },
 
-        content = {
-            ScaffoldContent(allEnabled) { allEnabled = it }
+        content =
+        { pad ->
+            ScaffoldContent(
+                bottomPadding = pad.calculateBottomPadding(),
+                allEnabled = allEnabled
+            ) {
+                allEnabled = it
+            }
         },
 
         floatingActionButtonPosition = FabPosition.Center,
@@ -208,7 +217,7 @@ fun MainPreview() {
 fun PestImages() {
     // Get images from the list that is storing the pest images from user
     // display the images only if the list is not empty
-    val images = listOf<Int>(R.drawable.pest1, R.drawable.pest2, R.drawable.pest3)
+    val images = listOf(R.drawable.pest1, R.drawable.pest2, R.drawable.pest3)
     val lazyListState = rememberLazyListState()
     val contentPadding = PaddingValues(16.dp)
 
@@ -230,6 +239,7 @@ fun PestImages() {
 
 @Composable
 fun ScaffoldContent(
+    bottomPadding: Dp,
     allEnabled: Boolean,
     onAllEnabled: (Boolean) -> Unit
 ) {
@@ -255,7 +265,7 @@ fun ScaffoldContent(
 
     Column (
         modifier = Modifier
-            .padding(top = 16.dp)
+            .padding(top = 16.dp, bottom = bottomPadding)
             .padding(horizontal = 20.dp)
             .verticalScroll(state = scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -286,7 +296,7 @@ fun ScaffoldContent(
 
         NoteSpace(label = "Notes", noteContent) { noteContent = it }
         NoteSpace(label = "Recommendation", recommendationContent) { recommendationContent = it }
-        Spacer(modifier = Modifier.height(200.dp))
+        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
