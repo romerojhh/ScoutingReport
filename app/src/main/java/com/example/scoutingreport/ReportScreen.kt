@@ -43,7 +43,7 @@ class ReportScreen : ComponentActivity() {
 fun MainReportScreen() {
 
     // 2 page for Shared tab and Saved tab
-    val pagerState = rememberPagerState(pageCount = 2)
+    val pagerState = rememberPagerState(0)
 
     Scaffold(
         topBar =
