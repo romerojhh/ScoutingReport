@@ -9,16 +9,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.pager.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class ReportScreen : ComponentActivity() {
@@ -41,11 +41,14 @@ class ReportScreen : ComponentActivity() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MainReportScreen() {
-
-    // 2 page for Shared tab and Saved tab
-    val pagerState = rememberPagerState(0)
+    val pagerState = rememberPagerState()
+    val pages = remember { listOf("Shared", "Saved") }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
+
         topBar =
         {
             TopAppBar(
@@ -67,63 +70,77 @@ fun MainReportScreen() {
                     NavigateIcon(icon = Icons.Default.List, title = "Reports")
                 }
             }
-        },
+        }
 
-        content = {
+    // Scaffold content
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             ScaffoldContent(
-                modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
-                pagerState = pagerState
+                pagerState = pagerState,
+                pages = pages,
+                coroutineScope = coroutineScope
             )
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ScaffoldContent(
-    modifier: Modifier = Modifier,
-    pagerState: PagerState
+    pagerState: PagerState,
+    pages: List<String>,
+    coroutineScope: CoroutineScope
 ) {
-    Tabs(pagerState = pagerState)
-}
-
-// on below line we are
-// creating a function for tabs
-@ExperimentalPagerApi
-@Composable
-fun Tabs(pagerState: PagerState) {
-    val list = listOf("Shared", "Saved")
-
-    // on below line we are creating
-    // a variable for the scope.
-    val scope = rememberCoroutineScope()
-
     TabRow(
         selectedTabIndex = pagerState.currentPage,
-        backgroundColor = MaterialTheme.colors.primary,
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
-                modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                height = 2.dp,
-                color = Color.White
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
             )
         }
     ) {
-        list.forEachIndexed { index, _ ->
+        pages.forEachIndexed { index, title ->
             Tab(
                 selected = pagerState.currentPage == index,
+                modifier = Modifier.padding(vertical = 12.dp),
                 onClick = {
-                    scope.launch {
+                    // Animate to the selected page when clicked
+                    coroutineScope.launch {
                         pagerState.animateScrollToPage(index)
                     }
-                },
-                text = {
-                    Text(
-                        text = list[index],
-                        color = if (pagerState.currentPage == index) Color.White else Color.LightGray
-                    )
                 }
-            )
+            ) {
+                Text(
+                    text = title,
+                    color = if (pagerState.currentPage == index) Color.White else Color.LightGray
+                )
+            }
+        }
+    }
+
+    // Content
+    HorizontalPager(
+        count = pages.size,
+        state = pagerState,
+        // Add 16.dp padding to 'center' the pages
+        contentPadding = PaddingValues(16.dp),
+        itemSpacing = 15.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) { page ->
+        // Our content for each page
+        Card {
+            Box(Modifier.fillMaxSize()) {
+                Text(
+                    text = "Page: ${pages[page]}",
+                    style = MaterialTheme.typography.h4,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }
