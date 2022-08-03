@@ -44,7 +44,9 @@ android {
         }
     }
 }
-
+kotlin.sourceSets.all {
+    languageSettings.optIn("-Xopt-in=kotlin.RequiresOptIn")
+}
 dependencies {
 
     // Coil

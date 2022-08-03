@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
@@ -142,6 +143,15 @@ fun ScaffoldContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SharedTabContent() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+
     }
 }
 
