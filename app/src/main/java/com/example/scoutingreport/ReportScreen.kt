@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
@@ -17,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.scoutingreport.data.Report
+import com.example.scoutingreport.ui.report_list.ReportItem
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
@@ -123,6 +126,13 @@ fun ScaffoldContent(
         }
     }
 
+    // MOCK DATA FOR REPORT LIST
+    val mockReport = Report("Field Name", "Pest Type", "Pest", 1, "notes", "recommendations")
+    val report: MutableList<Report> = mutableListOf()
+    for (i in 1 .. 10) {
+        report.add(mockReport)
+    }
+
     // Content
     HorizontalPager(
         count = pages.size,
@@ -133,25 +143,32 @@ fun ScaffoldContent(
         modifier = Modifier
             .fillMaxWidth()
     ) { page ->
-        // Our content for each page
-        Card {
-            Box(Modifier.fillMaxSize()) {
-                Text(
-                    text = "Page: ${pages[page]}",
-                    style = MaterialTheme.typography.h4,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+        if (pages[page] == "Shared") {
+            SharedTabContent(report)
+        } else {
+            Card {
+                Box(Modifier.fillMaxSize()) {
+                    Text(
+                        text = "Page: ${pages[page]}",
+                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun SharedTabContent() {
+fun SharedTabContent(
+    reports: List<Report>
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-
+        this.items(reports) { report ->
+            ReportItem(report = report)
+        }
     }
 }
 
