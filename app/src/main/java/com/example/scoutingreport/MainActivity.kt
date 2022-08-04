@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalSnapperApi::class)
-
 package com.example.scoutingreport
 
 import android.content.Intent
@@ -7,12 +5,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,16 +17,24 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.util.lerp
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
-import dev.chrisbanes.snapper.ExperimentalSnapperApi
-import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
+import com.google.accompanist.pager.*
+import kotlin.math.absoluteValue
 
 // TODO: Use extended icons so that we don't have to import camera icon using
 // implementation "androidx.compose.material:material-icons-extended:$compose_version"
@@ -212,28 +217,67 @@ fun MainPreview() {
     )
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun PestImages() {
     // Get images from the list that is storing the pest images from user
     // display the images only if the list is not empty
-    val images = listOf(R.drawable.pest1, R.drawable.pest2, R.drawable.pest3)
-    val lazyListState = rememberLazyListState()
-    val contentPadding = PaddingValues(16.dp)
 
-    LazyRow(
-        state = lazyListState,
-        flingBehavior = rememberSnapperFlingBehavior(lazyListState = lazyListState, endContentPadding = contentPadding.calculateEndPadding(LayoutDirection.Ltr),
-        ),
+    val images = listOf(R.drawable.pest1, R.drawable.pest2, R.drawable.pest3)
+    val list by remember { mutableStateOf(images) }
+    val contentPadding = PaddingValues(32.dp)
+    val pagerState = rememberPagerState()
+
+    // Display 10 items
+    HorizontalPager(
+        state = pagerState,
+        count = list.size,
+        itemSpacing = 10.dp,
         contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        items(images, itemContent = { item ->
-            ImageItem(imageId = item, modifier = Modifier
-                .width(160.dp)
-                .aspectRatio(3 / 4f))
-        })
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+    ) { page ->
+        // Our page content
+        Image(
+            painter = painterResource(id = list[page]),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(5.dp))
+                .graphicsLayer {
+                    // Calculate the absolute offset for the current page from the
+                    // scroll position. We use the absolute value which allows us to mirror
+                    // any effects for both directions
+                    val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+
+                    // We animate the scaleX + scaleY, between 85% and 100%
+                    lerp(
+                        start = 0.85f,
+                        stop = 1f,
+                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                    ).also { scale ->
+                        scaleX = scale
+                        scaleY = scale
+                    }
+
+                    // We animate the alpha, between 50% and 100%
+                    alpha = lerp(
+                        start = 0.5f,
+                        stop = 1f,
+                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                    )
+                }
+        )
     }
+
+    HorizontalPagerIndicator(
+        pagerState = pagerState,
+        modifier = Modifier
+            .wrapContentWidth(CenterHorizontally)
+            .padding(16.dp)
+    )
 }
 
 @Composable
