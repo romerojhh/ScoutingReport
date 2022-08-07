@@ -1,23 +1,20 @@
 package com.example.scoutingreport
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.scoutingreport.data.Report
 import com.example.scoutingreport.ui.report_list.ReportItem
 import com.example.scoutingreport.ui.theme.ScoutingReportTheme
@@ -25,26 +22,9 @@ import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class ReportScreen : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            ScoutingReportTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    MainReportScreen()
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MainReportScreen() {
+fun ReportScreen(navController: NavController) {
     val pagerState = rememberPagerState()
     val pages = remember { listOf("Shared", "Saved") }
     val coroutineScope = rememberCoroutineScope()
@@ -61,18 +41,12 @@ fun MainReportScreen() {
             )
         },
 
-        bottomBar =
-        {
-            BottomAppBar(
-                backgroundColor = MaterialTheme.colors.primary
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    NavigateIcon(icon = Icons.Default.LocationOn, title = "Scout")
-                    NavigateIcon(icon = Icons.Default.List, title = "Reports")
-                }
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                // Navigate to ScoutingEdit screen
+                navController.navigate(Screen.ScoutingEdit.route)
+            }) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         }
 
@@ -146,15 +120,7 @@ fun ScaffoldContent(
         if (pages[page] == "Shared") {
             SharedTabContent(report)
         } else {
-            Card {
-                Box(Modifier.fillMaxSize()) {
-                    Text(
-                        text = "Page: ${pages[page]}",
-                        style = MaterialTheme.typography.h4,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-            }
+            MatrixText()
         }
     }
 }
@@ -175,7 +141,8 @@ fun SharedTabContent(
 @Preview
 @Composable
 fun ReportScreenPreview() {
+    val navController = rememberNavController()
     ScoutingReportTheme {
-        MainReportScreen()
+        ReportScreen(navController = navController)
     }
 }
